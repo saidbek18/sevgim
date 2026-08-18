@@ -1,520 +1,349 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-function Heart({ filled = false, className = "" }) {
-  return (
-    <svg viewBox="0 0 24 24" className={`icon ${className}`}>
-      <path
-        d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78Z"
-        fill={filled ? "currentColor" : "none"}
-      />
-    </svg>
-  );
-}
+const messages = [
+  {
+    side: "them",
+    text: "Menimcha, bizga biroz vaqt kerak...",
+    time: "23:41",
+  },
+  {
+    side: "me",
+    text: "Tushundim.",
+    time: "23:42",
+  },
+  {
+    side: "them",
+    text: "Kechir...",
+    time: "23:43",
+  },
+];
 
-function Sparkle() {
-  return (
-    <svg viewBox="0 0 24 24" className="icon sparkle">
-      <path
-        d="M12 1.5 14 9l7.5 3-7.5 2-2 7.5-2-7.5L2 12l8-3 2-7.5Z"
-        fill="currentColor"
-      />
-    </svg>
-  );
-}
-
-function Arrow() {
-  return (
-    <svg viewBox="0 0 24 24" className="arrow">
-      <path d="M5 12h13" />
-      <path d="m13 6 6 6-6 6" />
-    </svg>
-  );
-}
-
-function Rose() {
-  return (
-    <svg viewBox="0 0 100 120" className="rose-svg">
-      <path
-        d="M51 50c1 19-1 43-10 66"
-        stroke="#4d8150"
-        strokeWidth="4"
-        fill="none"
-        strokeLinecap="round"
-      />
-
-      <path
-        d="M45 76C31 68 18 73 13 84c13 4 24 1 32-8Z"
-        fill="#4d8150"
-      />
-
-      <path
-        d="M48 66c12-9 25-7 33 2-11 8-23 9-33-2Z"
-        fill="#4d8150"
-      />
-
-      <path
-        d="M51 59C31 57 20 44 24 29 28 15 43 7 56 15c12-8 28 1 27 16-1 17-14 28-32 28Z"
-        fill="#dc3474"
-      />
-
-      <path
-        d="M36 29c5-11 19-14 28-6-8-1-14 2-17 8 6-3 12-1 15 4-8 7-19 5-26-6Z"
-        fill="#ff9abc"
-      />
-    </svg>
-  );
-}
-
-function createParticles(count) {
-  return Array.from({ length: count }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: 1 + Math.random() * 3,
-    delay: Math.random() * 5,
-    duration: 3 + Math.random() * 5,
-  }));
-}
-
-function createPetals(count) {
-  return Array.from({ length: count }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    delay: Math.random() * 3,
-    duration: 4 + Math.random() * 5,
-    size: 6 + Math.random() * 9,
-    drift: -160 + Math.random() * 320,
-    rotation: Math.random() * 360,
-  }));
-}
-
-export default function App() {
-  const [opened, setOpened] = useState(false);
-
-  // 0 = kechirasanmi
-  // 1 = Saidni yaxshi ko'rasanmi
-  // 2 = yana oxirgi savol
-  // 3 = final
-  const [step, setStep] = useState(0);
-
-  const [noPosition, setNoPosition] = useState({
-    x: 0,
-    y: 0,
-  });
-
-  const [particles, setParticles] = useState(() =>
-    createParticles(70)
-  );
-
-  const [petals, setPetals] = useState([]);
+function App() {
+  const [phase, setPhase] = useState(0);
+  const [released, setReleased] = useState(false);
+  const [glitch, setGlitch] = useState(false);
+  const canvasRef = useRef(null);
 
   useEffect(() => {
-    setParticles(createParticles(70));
+    const handleMouse = (e) => {
+      document.documentElement.style.setProperty("--mx", `${e.clientX}px`);
+      document.documentElement.style.setProperty("--my", `${e.clientY}px`);
+    };
+
+    window.addEventListener("mousemove", handleMouse);
+    return () => window.removeEventListener("mousemove", handleMouse);
   }, []);
 
-  const openEnvelope = () => {
-    setOpened(true);
-    setPetals(createPetals(70));
-  };
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-  const moveNoButton = () => {
-    const x = Math.floor(Math.random() * 180) - 90;
-    const y = Math.floor(Math.random() * 140) - 70;
+    const ctx = canvas.getContext("2d");
+    let animation;
+    let particles = [];
 
-    setNoPosition({ x, y });
+    const resize = () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
 
-    setPetals(createPetals(25));
-  };
+    resize();
+    window.addEventListener("resize", resize);
 
-  const answerYes = () => {
-    setStep((current) => current + 1);
+    for (let i = 0; i < 100; i++) {
+      particles.push({
+        x: Math.random() * window.innerWidth,
+        y: Math.random() * window.innerHeight,
+        size: Math.random() * 1.5 + 0.3,
+        speed: Math.random() * 0.35 + 0.1,
+        opacity: Math.random() * 0.5 + 0.1,
+      });
+    }
 
-    setNoPosition({
-      x: 0,
-      y: 0,
+    const draw = () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      particles.forEach((p) => {
+        p.y += p.speed;
+
+        if (p.y > canvas.height) {
+          p.y = -5;
+          p.x = Math.random() * canvas.width;
+        }
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
+        ctx.fill();
+      });
+
+      animation = requestAnimationFrame(draw);
+    };
+
+    draw();
+
+    return () => {
+      cancelAnimationFrame(animation);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
+
+  const scrollTo = (id) => {
+    document.querySelector(id)?.scrollIntoView({
+      behavior: "smooth",
     });
-
-    setParticles(createParticles(110));
-    setPetals(createPetals(65));
   };
 
-  const questions = [
-    "Meni kechirasanmi?",
-    "Saidni yaxshi ko'rasanmi?",
-    "Meni ham yaxshi ko'rasanmi?",
-  ];
+  const triggerGlitch = () => {
+    setGlitch(true);
+    setTimeout(() => setGlitch(false), 500);
+  };
+
+  const release = () => {
+    setReleased(true);
+    triggerGlitch();
+  };
 
   return (
-    <main
-      className={`app ${
-        opened ? "opened" : ""
-      } ${step === 3 ? "final" : ""}`}
-    >
+    <div className={`app ${glitch ? "glitch-active" : ""}`}>
+      <canvas ref={canvasRef} className="particles" />
+
+      <div className="cursor-light" />
+
       <div className="noise" />
 
-      <div className="background-orb orb-a" />
-      <div className="background-orb orb-b" />
-      <div className="background-orb orb-c" />
-
-      {/* PARTICLES */}
-
-      <div className="stars">
-        {particles.map((particle) => (
-          <span
-            key={particle.id}
-            className="star"
-            style={{
-              left: `${particle.x}%`,
-              top: `${particle.y}%`,
-              width: `${particle.size}px`,
-              height: `${particle.size}px`,
-              animationDelay: `${particle.delay}s`,
-              animationDuration: `${particle.duration}s`,
-            }}
-          />
-        ))}
-      </div>
-
-      {/* PETALS */}
-
-      {opened && (
-        <div className="petal-layer">
-          {petals.map((petal) => (
-            <span
-              key={petal.id}
-              className="petal"
-              style={{
-                left: `${petal.x}%`,
-                width: `${petal.size}px`,
-                height: `${petal.size * 0.68}px`,
-                animationDelay: `${petal.delay}s`,
-                animationDuration: `${petal.duration}s`,
-                "--drift": `${petal.drift}px`,
-                "--rotation": `${petal.rotation}deg`,
-              }}
-            />
-          ))}
+      <nav className="nav">
+        <div className="logo">
+          <span>AFTER</span>
+          <small>// 00:00</small>
         </div>
-      )}
 
-      <section className="scene">
+        <div className="nav-links">
+          <button onClick={() => scrollTo("#remains")}>01</button>
+          <button onClick={() => scrollTo("#messages")}>02</button>
+          <button onClick={() => scrollTo("#anger")}>03</button>
+          <button onClick={() => scrollTo("#release")}>04</button>
+        </div>
 
-        {/* =================================================
-            ENVELOPE
-        ================================================= */}
+        <div className="status">
+          <i />
+          SYSTEM ONLINE
+        </div>
+      </nav>
 
-        {!opened && (
-          <div className="closed-scene">
+      <main>
+        {/* HERO */}
+        <section className="hero">
+          <div className="hero-grid" />
 
+          <div className="hero-content">
             <div className="eyebrow">
-              <span />
-              SOMETHING SPECIAL FOR YOU
-              <span />
+              <span>PERSONAL ARCHIVE</span>
+              <span>08 / 18 / 2026</span>
             </div>
 
-            <h1 className="hero-title">
-              <span>Mening</span>
-
-              <strong>
-                Sevgilim
-              </strong>
-
-              <Heart
-                filled
-                className="hero-heart"
-              />
+            <h1>
+              <span className="line">SHE</span>
+              <span className="line outline">LEFT.</span>
             </h1>
 
-            <p className="hero-description">
-              Agar seni ranjitgan bo'lsam,
-              <br />
-              meni kechir...
-            </p>
-
-            <div className="envelope-stage">
-
-              <div className="envelope-aura" />
-
-              <div className="envelope">
-
-                {/* BACK */}
-
-                <div className="envelope-back">
-
-                  <div className="paper-grain" />
-
-                  <div className="inside-letter">
-
-                    <div className="inside-heart">
-                      <Heart filled />
-                    </div>
-
-                    <span>
-                      Sen uchun
-                    </span>
-
-                    <b>
-                      bir xat
-                    </b>
-
-                    <span>
-                      tayyorladim...
-                    </span>
-
-                  </div>
-                </div>
-
-                {/* FLAP */}
-
-                <div className="envelope-flap">
-                  <div className="flap-shine" />
-                </div>
-
-                {/* FRONT */}
-
-                <div className="envelope-front">
-
-                  <div className="fold fold-left" />
-                  <div className="fold fold-right" />
-
-                  <div className="seal">
-                    <div className="seal-ring">
-                      <Heart filled />
-                    </div>
-                  </div>
-
-                  <div className="envelope-caption">
-                    Seni uchun...
-                  </div>
-
-                </div>
-
-              </div>
-
-              <button
-                className="open-button"
-                onClick={openEnvelope}
-              >
-                <span>
-                  Ochish
-                </span>
-
-                <span className="button-arrow">
-                  <Arrow />
-                </span>
-              </button>
-
-              <div className="open-hint">
-                <Sparkle />
-                <span>
-                  tegin va och
-                </span>
-                <Sparkle />
-              </div>
-
-            </div>
-
-            <div className="under-note">
-              <Heart />
-              <span>
-                Faqat sen uchun tayyorlandi
-              </span>
-              <Heart />
-            </div>
-
-          </div>
-        )}
-
-        {/* =================================================
-            QUESTIONS
-        ================================================= */}
-
-        {opened && step < 3 && (
-          <div className="question-scene">
-
-            <div className="question-roses">
-              <div className="question-rose rose-left">
-                <Rose />
-              </div>
-
-              <div className="question-rose rose-right">
-                <Rose />
-              </div>
-            </div>
-
-            <div className="question-card">
-
-              <div className="question-top">
-                <Sparkle />
-
-                <span>
-                  FROM MY HEART
-                </span>
-
-                <Sparkle />
-              </div>
-
-              <div className="question-heart">
-                <Heart filled />
-              </div>
-
-              <div className="question-number">
-                0{step + 1} / 03
-              </div>
-
-              <h2>
-                {questions[step]}
-              </h2>
-
-              <div className="question-divider">
-                <span />
-                <Heart filled />
-                <span />
-              </div>
-
-              <p className="question-text">
-                {step === 0 &&
-                  "Birgina haqiqatni bilishni xohlayman..."}
-                {step === 1 &&
-                  "Buni eshitish men uchun juda muhim..."}
-                {step === 2 &&
-                  "Oxirgi savolim. Rostini ayt..."}
+            <div className="hero-bottom">
+              <p>
+                Some people leave.
+                <br />
+                Some silence stays.
               </p>
 
-              <div className="answers">
-
-                <button
-                  className="yes-button"
-                  onClick={answerYes}
-                >
-                  <span>
-                    HA
-                  </span>
-
-                  <Heart filled />
-                </button>
-
-                <button
-                  className="no-button"
-                  onMouseEnter={moveNoButton}
-                  onTouchStart={moveNoButton}
-                  onClick={moveNoButton}
-                  style={{
-                    transform: `
-                      translate(
-                        ${noPosition.x}px,
-                        ${noPosition.y}px
-                      )
-                    `,
-                  }}
-                >
-                  YO'Q
-                </button>
-
+              <div className="scroll">
+                <span>SCROLL TO REMEMBER</span>
+                <div className="scroll-line" />
               </div>
-
-              <div className="question-hint">
-                <Sparkle />
-                <span>
-                  to'g'risini tanla
-                </span>
-                <Sparkle />
-              </div>
-
             </div>
-
           </div>
-        )}
 
-        {/* =================================================
-            FINAL
-        ================================================= */}
+          <div className="hero-number">001</div>
+        </section>
 
-        {opened && step === 3 && (
-          <div className="final-scene">
+        {/* REMAINS */}
+        <section id="remains" className="section remains">
+          <div className="section-index">01 / WHAT REMAINS</div>
 
-            <div className="final-roses">
-              <div className="final-rose rose-a">
-                <Rose />
-              </div>
-
-              <div className="final-rose rose-b">
-                <Rose />
-              </div>
-
-              <div className="final-rose rose-c">
-                <Rose />
-              </div>
-
-              <div className="final-rose rose-d">
-                <Rose />
-              </div>
+          <div className="section-main">
+            <div className="big-word">
+              <span>WHAT</span>
+              <span>REMAINS</span>
             </div>
 
-            <div className="final-card">
-
-              <div className="final-sparkles">
-                <Sparkle />
-                <Sparkle />
-                <Sparkle />
-              </div>
-
-              <div className="final-heart">
-                <Heart filled />
-              </div>
-
-              <div className="final-small">
-                THEN THERE IS ONLY ONE THING LEFT TO SAY
-              </div>
-
-              <h2>
-                Seni ham
-                <br />
-                yaxshi ko'raman
-              </h2>
-
-              <div className="final-divider">
-                <span />
-                <Heart filled />
-                <span />
-              </div>
+            <div className="quote">
+              <div className="quote-mark">“</div>
 
               <p>
-                Har doim kulib yur.
+                Ba'zi odamlar hayotingga kiradi.
                 <br />
-                Va doim baxtli bo'l.
+                Keyin ketadi.
+                <br />
+                Lekin ular qoldirgan jimlik
+                <br />
+                bir muddat sen bilan qoladi.
               </p>
 
-              <div className="final-signature">
-                <span>
-                  — Said
-                </span>
+              <span className="quote-author">— AFTER // ARCHIVE</span>
+            </div>
+          </div>
+        </section>
 
+        {/* MESSAGES */}
+        <section id="messages" className="section messages">
+          <div className="section-index">02 / NO MORE TEXTS</div>
+
+          <div className="phone-wrap">
+            <div className="phone">
+              <div className="phone-top">
+                <span>9:47</span>
+                <span>● ● ●</span>
+              </div>
+
+              <div className="chat-header">
+                <div className="avatar">?</div>
                 <div>
-                  <Heart filled />
+                  <strong>UNKNOWN</strong>
+                  <small>last seen recently</small>
                 </div>
               </div>
 
+              <div className="chat-body">
+                {messages.map((message, index) => (
+                  <div
+                    key={index}
+                    className={`message ${message.side}`}
+                    style={{ animationDelay: `${index * 0.25}s` }}
+                  >
+                    <span>{message.text}</span>
+                    <small>{message.time}</small>
+                  </div>
+                ))}
+
+                <div className="typing">
+                  <span />
+                  <span />
+                  <span />
+                </div>
+
+                <div className="deleted">
+                  message unavailable
+                </div>
+              </div>
+
+              <div className="chat-input">
+                <span>Message</span>
+                <b>↑</b>
+              </div>
             </div>
-
           </div>
-        )}
 
-      </section>
+          <div className="message-caption">
+            <span>CONNECTION LOST</span>
+            <strong>NO MORE TEXTS.</strong>
+          </div>
+        </section>
 
-      <footer className="footer">
-        <span>
-          MADE WITH
-        </span>
+        {/* ANGER */}
+        <section id="anger" className="section anger">
+          <div className="section-index">03 / ANGER</div>
 
-        <Heart filled />
+          <div className="anger-center">
+            <div className="anger-ring ring-one" />
+            <div className="anger-ring ring-two" />
+            <div className="anger-ring ring-three" />
 
-        <span>
-          JUST FOR YOU
-        </span>
-      </footer>
+            <button
+              className="anger-word"
+              onClick={triggerGlitch}
+              data-text="ANGER"
+            >
+              ANGER
+            </button>
 
-    </main>
+            <span className="anger-hint">
+              CLICK TO BREAK THE SILENCE
+            </span>
+          </div>
+
+          <div className="anger-side left">
+            I AM NOT
+            <br />
+            BROKEN.
+          </div>
+
+          <div className="anger-side right">
+            I AM
+            <br />
+            CHANGING.
+          </div>
+        </section>
+
+        {/* RELEASE */}
+        <section id="release" className={`section release ${released ? "released" : ""}`}>
+          <div className="release-content">
+            {!released ? (
+              <>
+                <div className="section-index">04 / RELEASE</div>
+
+                <h2>
+                  LET
+                  <br />
+                  IT GO.
+                </h2>
+
+                <p>
+                  You don't need an apology
+                  <br />
+                  to move forward.
+                </p>
+
+                <button className="release-btn" onClick={release}>
+                  <span>RELEASE</span>
+                  <i>→</i>
+                </button>
+              </>
+            ) : (
+              <div className="final-message">
+                <div className="final-small">SYSTEM RESET COMPLETE</div>
+
+                <h2>
+                  YOU LOST
+                  <br />
+                  SOMEONE.
+                </h2>
+
+                <h3>
+                  YOU DIDN'T
+                  <br />
+                  LOSE YOURSELF.
+                </h3>
+
+                <div className="final-line" />
+
+                <span>— SAIDBEK</span>
+
+                <div className="rebuild">
+                  <span>REBUILDING...</span>
+                  <strong>100%</strong>
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <footer>
+          <span>AFTER // 00:00</span>
+          <span>END OF ARCHIVE</span>
+          <span>© 2026</span>
+        </footer>
+      </main>
+    </div>
   );
 }
+
+export default App;
