@@ -1,349 +1,239 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
-const messages = [
-  {
-    side: "them",
-    text: "Menimcha, bizga biroz vaqt kerak...",
-    time: "23:41",
-  },
-  {
-    side: "me",
-    text: "Tushundim.",
-    time: "23:42",
-  },
-  {
-    side: "them",
-    text: "Kechir...",
-    time: "23:43",
-  },
-];
+const petals = Array.from({ length: 32 }, (_, i) => i);
 
-function App() {
-  const [phase, setPhase] = useState(0);
-  const [released, setReleased] = useState(false);
-  const [glitch, setGlitch] = useState(false);
-  const canvasRef = useRef(null);
+export default function App() {
+  const [step, setStep] = useState(0);
+  const [opened, setOpened] = useState(false);
+  const [mouse, setMouse] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
-    const handleMouse = (e) => {
-      document.documentElement.style.setProperty("--mx", `${e.clientX}px`);
-      document.documentElement.style.setProperty("--my", `${e.clientY}px`);
+    const move = (e) => {
+      setMouse({
+        x: (e.clientX / window.innerWidth - 0.5) * 2,
+        y: (e.clientY / window.innerHeight - 0.5) * 2,
+      });
     };
 
-    window.addEventListener("mousemove", handleMouse);
-    return () => window.removeEventListener("mousemove", handleMouse);
+    window.addEventListener("mousemove", move);
+    return () => window.removeEventListener("mousemove", move);
   }, []);
 
-  useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-
-    const ctx = canvas.getContext("2d");
-    let animation;
-    let particles = [];
-
-    const resize = () => {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    };
-
-    resize();
-    window.addEventListener("resize", resize);
-
-    for (let i = 0; i < 100; i++) {
-      particles.push({
-        x: Math.random() * window.innerWidth,
-        y: Math.random() * window.innerHeight,
-        size: Math.random() * 1.5 + 0.3,
-        speed: Math.random() * 0.35 + 0.1,
-        opacity: Math.random() * 0.5 + 0.1,
-      });
-    }
-
-    const draw = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      particles.forEach((p) => {
-        p.y += p.speed;
-
-        if (p.y > canvas.height) {
-          p.y = -5;
-          p.x = Math.random() * canvas.width;
-        }
-
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,255,255,${p.opacity})`;
-        ctx.fill();
-      });
-
-      animation = requestAnimationFrame(draw);
-    };
-
-    draw();
-
-    return () => {
-      cancelAnimationFrame(animation);
-      window.removeEventListener("resize", resize);
-    };
-  }, []);
-
-  const scrollTo = (id) => {
-    document.querySelector(id)?.scrollIntoView({
-      behavior: "smooth",
-    });
-  };
-
-  const triggerGlitch = () => {
-    setGlitch(true);
-    setTimeout(() => setGlitch(false), 500);
-  };
-
-  const release = () => {
-    setReleased(true);
-    triggerGlitch();
+  const next = () => {
+    setOpened(false);
+    setStep((prev) => prev + 1);
   };
 
   return (
-    <div className={`app ${glitch ? "glitch-active" : ""}`}>
-      <canvas ref={canvasRef} className="particles" />
+    <div
+      className="app"
+      style={{
+        "--mx": `${mouse.x * 20}px`,
+        "--my": `${mouse.y * 20}px`,
+      }}
+    >
+      <div className="aurora aurora1" />
+      <div className="aurora aurora2" />
+      <div className="moon" />
 
-      <div className="cursor-light" />
+      <div className="stars">
+        {Array.from({ length: 90 }).map((_, i) => (
+          <span
+            key={i}
+            style={{
+              left: `${(i * 37) % 100}%`,
+              top: `${(i * 61) % 100}%`,
+              animationDelay: `${(i % 8) * 0.4}s`,
+            }}
+          />
+        ))}
+      </div>
 
-      <div className="noise" />
+      <div className="petals">
+        {petals.map((i) => (
+          <i
+            key={i}
+            style={{
+              left: `${(i * 31) % 100}%`,
+              animationDelay: `${(i % 12) * 0.45}s`,
+              animationDuration: `${7 + (i % 6)}s`,
+            }}
+          />
+        ))}
+      </div>
 
-      <nav className="nav">
-        <div className="logo">
-          <span>AFTER</span>
-          <small>// 00:00</small>
-        </div>
+      <div className="counter">
+        {String(step + 1).padStart(2, "0")} / 05
+      </div>
 
-        <div className="nav-links">
-          <button onClick={() => scrollTo("#remains")}>01</button>
-          <button onClick={() => scrollTo("#messages")}>02</button>
-          <button onClick={() => scrollTo("#anger")}>03</button>
-          <button onClick={() => scrollTo("#release")}>04</button>
-        </div>
-
-        <div className="status">
-          <i />
-          SYSTEM ONLINE
-        </div>
-      </nav>
-
-      <main>
-        {/* HERO */}
+      {step === 0 && (
         <section className="hero">
-          <div className="hero-grid" />
+          <div className="tiny">A LITTLE SOMETHING FOR</div>
 
-          <div className="hero-content">
-            <div className="eyebrow">
-              <span>PERSONAL ARCHIVE</span>
-              <span>08 / 18 / 2026</span>
-            </div>
-
-            <h1>
-              <span className="line">SHE</span>
-              <span className="line outline">LEFT.</span>
-            </h1>
-
-            <div className="hero-bottom">
-              <p>
-                Some people leave.
-                <br />
-                Some silence stays.
-              </p>
-
-              <div className="scroll">
-                <span>SCROLL TO REMEMBER</span>
-                <div className="scroll-line" />
-              </div>
-            </div>
+          <div className="name">
+            <span>D</span>
+            <span>I</span>
+            <span>N</span>
+            <span>A</span>
+            <span>R</span>
+            <span>A</span>
           </div>
 
-          <div className="hero-number">001</div>
-        </section>
+          <div className="line" />
 
-        {/* REMAINS */}
-        <section id="remains" className="section remains">
-          <div className="section-index">01 / WHAT REMAINS</div>
+          <p className="heroText">
+            Ba'zan insonni xursand qilish uchun
+            <br />
+            katta sabab kerak emas.
+          </p>
 
-          <div className="section-main">
-            <div className="big-word">
-              <span>WHAT</span>
-              <span>REMAINS</span>
-            </div>
+          <button className="mainButton" onClick={next}>
+            <span>BU YERGA BOS</span>
+            <b>→</b>
+          </button>
 
-            <div className="quote">
-              <div className="quote-mark">“</div>
-
-              <p>
-                Ba'zi odamlar hayotingga kiradi.
-                <br />
-                Keyin ketadi.
-                <br />
-                Lekin ular qoldirgan jimlik
-                <br />
-                bir muddat sen bilan qoladi.
-              </p>
-
-              <span className="quote-author">— AFTER // ARCHIVE</span>
-            </div>
+          <div className="scrollHint">
+            <span />
+            davom et
           </div>
         </section>
+      )}
 
-        {/* MESSAGES */}
-        <section id="messages" className="section messages">
-          <div className="section-index">02 / NO MORE TEXTS</div>
+      {step === 1 && (
+        <section className="content">
+          <div className="eyebrow">01 — DINARA</div>
 
-          <div className="phone-wrap">
-            <div className="phone">
-              <div className="phone-top">
-                <span>9:47</span>
-                <span>● ● ●</span>
-              </div>
+          <h1>
+            Bugun seni
+            <br />
+            <em>tabassum</em> qildirmoqchiman.
+          </h1>
 
-              <div className="chat-header">
-                <div className="avatar">?</div>
-                <div>
-                  <strong>UNKNOWN</strong>
-                  <small>last seen recently</small>
-                </div>
-              </div>
+          <p>
+            Balki kuning unchalik yaxshi o'tmagandir.
+            Balki nimadir kayfiyatingni tushirgandir.
+            Lekin hozir shu kichkina joyda faqat bitta narsa bor:
+          </p>
 
-              <div className="chat-body">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className={`message ${message.side}`}
-                    style={{ animationDelay: `${index * 0.25}s` }}
-                  >
-                    <span>{message.text}</span>
-                    <small>{message.time}</small>
-                  </div>
-                ))}
-
-                <div className="typing">
-                  <span />
-                  <span />
-                  <span />
-                </div>
-
-                <div className="deleted">
-                  message unavailable
-                </div>
-              </div>
-
-              <div className="chat-input">
-                <span>Message</span>
-                <b>↑</b>
-              </div>
-            </div>
+          <div className="quote">
+            <span>“</span>
+            <strong>sen.</strong>
+            <span>”</span>
           </div>
 
-          <div className="message-caption">
-            <span>CONNECTION LOST</span>
-            <strong>NO MORE TEXTS.</strong>
-          </div>
+          <button className="mainButton" onClick={next}>
+            DAVOM ET <b>→</b>
+          </button>
         </section>
+      )}
 
-        {/* ANGER */}
-        <section id="anger" className="section anger">
-          <div className="section-index">03 / ANGER</div>
+      {step === 2 && (
+        <section className="content envelopeSection">
+          <div className="eyebrow">02 — OPEN ME</div>
 
-          <div className="anger-center">
-            <div className="anger-ring ring-one" />
-            <div className="anger-ring ring-two" />
-            <div className="anger-ring ring-three" />
+          <h1>
+            Senga
+            <br />
+            <em>kichkina xat.</em>
+          </h1>
 
-            <button
-              className="anger-word"
-              onClick={triggerGlitch}
-              data-text="ANGER"
+          {!opened ? (
+            <div
+              className="envelope"
+              onClick={() => setOpened(true)}
             >
-              ANGER
-            </button>
-
-            <span className="anger-hint">
-              CLICK TO BREAK THE SILENCE
-            </span>
-          </div>
-
-          <div className="anger-side left">
-            I AM NOT
-            <br />
-            BROKEN.
-          </div>
-
-          <div className="anger-side right">
-            I AM
-            <br />
-            CHANGING.
-          </div>
-        </section>
-
-        {/* RELEASE */}
-        <section id="release" className={`section release ${released ? "released" : ""}`}>
-          <div className="release-content">
-            {!released ? (
-              <>
-                <div className="section-index">04 / RELEASE</div>
-
-                <h2>
-                  LET
-                  <br />
-                  IT GO.
-                </h2>
-
-                <p>
-                  You don't need an apology
-                  <br />
-                  to move forward.
-                </p>
-
-                <button className="release-btn" onClick={release}>
-                  <span>RELEASE</span>
-                  <i>→</i>
-                </button>
-              </>
-            ) : (
-              <div className="final-message">
-                <div className="final-small">SYSTEM RESET COMPLETE</div>
-
-                <h2>
-                  YOU LOST
-                  <br />
-                  SOMEONE.
-                </h2>
-
-                <h3>
-                  YOU DIDN'T
-                  <br />
-                  LOSE YOURSELF.
-                </h3>
-
-                <div className="final-line" />
-
-                <span>— SAIDBEK</span>
-
-                <div className="rebuild">
-                  <span>REBUILDING...</span>
-                  <strong>100%</strong>
-                </div>
+              <div className="envelopeBack" />
+              <div className="paper">
+                <div>♡</div>
               </div>
-            )}
+              <div className="flap" />
+              <div className="envelopeFront" />
+              <span>OPEN</span>
+            </div>
+          ) : (
+            <div className="letterCard">
+              <div className="letterTop">FOR DINARA ♡</div>
+
+              <p>
+                Men seni doim xursand qila olaman deb
+                va'da berolmayman.
+                <br />
+                Lekin seni xafa ko'rsam,
+                hech bo'lmasa kayfiyatingni ko'tarishga
+                harakat qilaman.
+              </p>
+
+              <div className="letterBottom">
+                with a little love ✦
+              </div>
+
+              <button className="mainButton" onClick={next}>
+                YANA BIR NARSA <b>→</b>
+              </button>
+            </div>
+          )}
+        </section>
+      )}
+
+      {step === 3 && (
+        <section className="content special">
+          <div className="eyebrow">03 — ONE THING</div>
+
+          <div className="giantHeart">♡</div>
+
+          <h1>
+            Dinara,
+            <br />
+            <em>sen juda qadrlisan.</em>
+          </h1>
+
+          <p>
+            Shuni eslab qo'y.
+            Bugungi kayfiyat o'tib ketadi.
+            Lekin sening tabassuming yana qaytadi.
+          </p>
+
+          <button className="mainButton" onClick={next}>
+            OXIRGISI <b>→</b>
+          </button>
+        </section>
+      )}
+
+      {step === 4 && (
+        <section className="final">
+          <div className="finalGlow" />
+
+          <div className="eyebrow">FOR YOU, DINARA</div>
+
+          <div className="finalName">DINARA</div>
+
+          <div className="finalLine" />
+
+          <h1>
+            Endi faqat
+            <br />
+            <em>tabassum qil.</em>
+          </h1>
+
+          <p>
+            Men bu saytni mukammal qilish uchun emas,
+            <br />
+            seni hech bo'lmasa bir soniyaga
+            xursand qilish uchun qildim.
+          </p>
+
+          <div className="finalHeart">♥</div>
+
+          <div className="signature">
+            sen uchun, chin dildan.
+          </div>
+
+          <div className="finalHint">
+            ✦ END ✦
           </div>
         </section>
-
-        <footer>
-          <span>AFTER // 00:00</span>
-          <span>END OF ARCHIVE</span>
-          <span>© 2026</span>
-        </footer>
-      </main>
+      )}
     </div>
   );
 }
-
-export default App;
