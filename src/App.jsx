@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import "./App.css";
 
 const memories = [
@@ -9,38 +9,13 @@ const memories = [
 
 function App() {
   const [opened, setOpened] = useState(false);
-  const [music, setMusic] = useState(false);
-  const [showLetter, setShowLetter] = useState(false);
-  const audioRef = useRef(null);
-
-  useEffect(() => {
-    const audio = audioRef.current;
-
-    if (!audio) return;
-
-    if (music) {
-      audio.play().catch(() => {});
-    } else {
-      audio.pause();
-    }
-  }, [music]);
 
   const openEnvelope = () => {
     setOpened(true);
-
-    setTimeout(() => {
-      setShowLetter(true);
-    }, 1000);
-  };
-
-  const toggleMusic = () => {
-    setMusic((prev) => !prev);
   };
 
   return (
     <main className="app">
-      <audio ref={audioRef} loop src="/music.mp3" />
-
       <div className="stars" />
       <div className="moon" />
 
@@ -49,11 +24,6 @@ function App() {
 
       <div className="floating-orb orb-one" />
       <div className="floating-orb orb-two" />
-
-      <button className="music-btn" onClick={toggleMusic}>
-        <span className={music ? "sound active" : "sound"}>♫</span>
-        {music ? " MUSIQA YOQILDI" : " MUSIQANI YOQISH"}
-      </button>
 
       {!opened ? (
         <section className="landing">
@@ -102,9 +72,7 @@ function App() {
               <div className="envelope-front" />
 
               <div className="flap">
-                <div className="seal">
-                  D
-                </div>
+                <div className="seal">D</div>
               </div>
             </div>
           </div>
@@ -146,9 +114,7 @@ function App() {
             </div>
 
             <div className="letter-text">
-              <p>
-                Dinara...
-              </p>
+              <p>Dinara...</p>
 
               <p>
                 Balki bu xatni ochganingda,
@@ -241,7 +207,9 @@ function App() {
               <div
                 className="memory"
                 key={index}
-                style={{ animationDelay: `${index * 0.3}s` }}
+                style={{
+                  animationDelay: `${index * 0.3}s`,
+                }}
               >
                 {memory}
               </div>
@@ -250,7 +218,9 @@ function App() {
 
           <div className="footer-message">
             <span>لا شيء يُنسى بسهولة</span>
-            <p>Ba'zi xotiralar shunchaki yo‘qolib ketmaydi.</p>
+            <p>
+              Ba'zi xotiralar shunchaki yo‘qolib ketmaydi.
+            </p>
           </div>
         </section>
       )}
