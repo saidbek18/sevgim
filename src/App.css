@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Amiri:wght@400;700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Cinzel:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,500;0,600;1,400;1,500&display=swap");
 
 * {
   box-sizing: border-box;
@@ -10,12 +10,13 @@ html {
 
 body {
   margin: 0;
-  background: #090604;
+  background: #080503;
   color: #f5ead4;
   font-family: "Playfair Display", serif;
 }
 
-button {
+button,
+[role="button"] {
   font-family: inherit;
 }
 
@@ -26,7 +27,7 @@ button {
   background:
     radial-gradient(
       circle at 50% 35%,
-      rgba(113, 72, 27, 0.15),
+      rgba(124, 78, 28, 0.16),
       transparent 35%
     ),
     radial-gradient(
@@ -34,12 +35,10 @@ button {
       rgba(202, 158, 72, 0.08),
       transparent 25%
     ),
-    #090604;
+    #080503;
 }
 
-/* =========================
-   BACKGROUND
-========================= */
+/* BACKGROUND */
 
 .stars {
   position: fixed;
@@ -48,7 +47,11 @@ button {
   opacity: 0.65;
   background-image:
     radial-gradient(circle, #fff 1px, transparent 1px),
-    radial-gradient(circle, rgba(255, 215, 130, 0.8) 1px, transparent 1px);
+    radial-gradient(
+      circle,
+      rgba(255, 215, 130, 0.8) 1px,
+      transparent 1px
+    );
   background-size: 140px 140px, 230px 230px;
   background-position: 10px 20px, 80px 110px;
   animation: starsMove 20s linear infinite;
@@ -111,6 +114,7 @@ button {
   background: #e4bb72;
   box-shadow: 0 0 20px #d8a950;
   animation: floatOrb 7s ease-in-out infinite;
+  pointer-events: none;
 }
 
 .orb-one {
@@ -137,53 +141,7 @@ button {
   }
 }
 
-/* =========================
-   MUSIC
-========================= */
-
-.music-btn {
-  position: fixed;
-  right: 28px;
-  top: 28px;
-  z-index: 50;
-  padding: 13px 18px;
-  border: 1px solid rgba(222, 180, 102, 0.25);
-  border-radius: 100px;
-  background: rgba(17, 11, 6, 0.7);
-  backdrop-filter: blur(20px);
-  color: #dcb66d;
-  font-family: "Cinzel", serif;
-  font-size: 9px;
-  letter-spacing: 2px;
-  cursor: pointer;
-  transition: 0.35s ease;
-}
-
-.music-btn:hover {
-  border-color: rgba(222, 180, 102, 0.65);
-  box-shadow: 0 0 30px rgba(222, 180, 102, 0.1);
-  transform: translateY(-2px);
-}
-
-.sound {
-  display: inline-block;
-  font-size: 15px;
-  transition: 0.3s;
-}
-
-.sound.active {
-  animation: soundPulse 0.7s ease-in-out infinite alternate;
-}
-
-@keyframes soundPulse {
-  to {
-    transform: scale(1.3);
-  }
-}
-
-/* =========================
-   LANDING
-========================= */
+/* LANDING */
 
 .landing {
   min-height: 100vh;
@@ -235,6 +193,7 @@ button {
     #b18442
   );
   -webkit-background-clip: text;
+  background-clip: text;
   color: transparent;
   text-shadow: 0 0 50px rgba(220, 170, 75, 0.12);
 }
@@ -275,9 +234,7 @@ button {
   opacity: 0.6;
 }
 
-/* =========================
-   ENVELOPE
-========================= */
+/* ENVELOPE */
 
 .envelope-wrap {
   width: min(370px, 80vw);
@@ -286,6 +243,7 @@ button {
   position: relative;
   cursor: pointer;
   perspective: 1200px;
+  outline: none;
 }
 
 .glow {
@@ -300,7 +258,8 @@ button {
   transition: 0.7s;
 }
 
-.envelope-wrap:hover .glow {
+.envelope-wrap:hover .glow,
+.envelope-wrap:focus .glow {
   background: rgba(232, 189, 99, 0.28);
   transform: translate(-50%, -20%) scale(1.15);
 }
@@ -341,7 +300,13 @@ button {
       transparent 50.5%
     ),
     #26190d;
-  clip-path: polygon(0 0, 50% 52%, 100% 0, 100% 100%, 0 100%);
+  clip-path: polygon(
+    0 0,
+    50% 52%,
+    100% 0,
+    100% 100%,
+    0 100%
+  );
   border-radius: 5px;
 }
 
@@ -355,7 +320,8 @@ button {
   transform-origin: top;
   background: linear-gradient(145deg, #4b3217, #201308);
   clip-path: polygon(0 0, 100% 0, 50% 100%);
-  transition: transform 1s cubic-bezier(0.65, 0, 0.35, 1);
+  transition:
+    transform 1s cubic-bezier(0.65, 0, 0.35, 1);
   border-top: 1px solid rgba(220, 178, 93, 0.25);
 }
 
@@ -363,8 +329,8 @@ button {
   transform: rotateX(-12deg);
 }
 
-.envelope-wrap.opening .flap {
-  transform: rotateX(-180deg);
+.envelope-wrap:focus .flap {
+  transform: rotateX(-12deg);
 }
 
 .seal {
@@ -398,13 +364,14 @@ button {
   background: #f2e7cf;
   color: #332314;
   padding: 28px;
-  transition: transform 1.1s cubic-bezier(0.65, 0, 0.35, 1);
+  transition:
+    transform 1.1s cubic-bezier(0.65, 0, 0.35, 1);
   text-align: center;
   box-shadow: 0 -5px 25px rgba(0, 0, 0, 0.3);
 }
 
-.envelope-wrap.opening .envelope-paper {
-  transform: translateY(-150px);
+.envelope-wrap:hover .envelope-paper {
+  transform: translateY(-7px);
 }
 
 .envelope-paper p {
@@ -465,9 +432,7 @@ button {
   font-size: 18px;
 }
 
-/* =========================
-   LETTER
-========================= */
+/* LETTER */
 
 .letter-page {
   min-height: 100vh;
@@ -483,10 +448,12 @@ button {
 @keyframes pageReveal {
   from {
     opacity: 0;
+    transform: translateY(20px);
   }
 
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
@@ -658,9 +625,7 @@ button {
   font-size: 20px;
 }
 
-/* =========================
-   MEMORIES
-========================= */
+/* MEMORIES */
 
 .memory-strip {
   display: flex;
@@ -711,20 +676,11 @@ button {
   margin-top: 8px;
 }
 
-/* =========================
-   MOBILE
-========================= */
+/* MOBILE */
 
 @media (max-width: 600px) {
-  .music-btn {
-    right: 15px;
-    top: 15px;
-    padding: 10px 13px;
-    font-size: 7px;
-  }
-
   .landing {
-    padding-top: 100px;
+    padding-top: 70px;
   }
 
   .intro h1 {
@@ -759,12 +715,8 @@ button {
     padding: 20px;
   }
 
-  .envelope-wrap.opening .envelope-paper {
-    transform: translateY(-120px);
-  }
-
   .letter-page {
-    padding-top: 95px;
+    padding-top: 80px;
   }
 
   .letter-card {
@@ -791,5 +743,11 @@ button {
 
   .bottom-note {
     display: none;
+  }
+
+  .moon {
+    width: 150px;
+    height: 150px;
+    right: -70px;
   }
 }
