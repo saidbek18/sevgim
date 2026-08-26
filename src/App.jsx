@@ -1,239 +1,261 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./App.css";
 
-const petals = Array.from({ length: 32 }, (_, i) => i);
+const memories = [
+  "6–7 yil...",
+  "Shuncha vaqt ichida juda ko‘p narsalar o‘zgardi.",
+  "Lekin seni qadrlashim o‘zgarmadi.",
+];
 
-export default function App() {
-  const [step, setStep] = useState(0);
+function App() {
   const [opened, setOpened] = useState(false);
-  const [mouse, setMouse] = useState({ x: 0, y: 0 });
+  const [music, setMusic] = useState(false);
+  const [showLetter, setShowLetter] = useState(false);
+  const audioRef = useRef(null);
 
   useEffect(() => {
-    const move = (e) => {
-      setMouse({
-        x: (e.clientX / window.innerWidth - 0.5) * 2,
-        y: (e.clientY / window.innerHeight - 0.5) * 2,
-      });
-    };
+    const audio = audioRef.current;
 
-    window.addEventListener("mousemove", move);
-    return () => window.removeEventListener("mousemove", move);
-  }, []);
+    if (!audio) return;
 
-  const next = () => {
-    setOpened(false);
-    setStep((prev) => prev + 1);
+    if (music) {
+      audio.play().catch(() => {});
+    } else {
+      audio.pause();
+    }
+  }, [music]);
+
+  const openEnvelope = () => {
+    setOpened(true);
+
+    setTimeout(() => {
+      setShowLetter(true);
+    }, 1000);
+  };
+
+  const toggleMusic = () => {
+    setMusic((prev) => !prev);
   };
 
   return (
-    <div
-      className="app"
-      style={{
-        "--mx": `${mouse.x * 20}px`,
-        "--my": `${mouse.y * 20}px`,
-      }}
-    >
-      <div className="aurora aurora1" />
-      <div className="aurora aurora2" />
+    <main className="app">
+      <audio ref={audioRef} loop src="/music.mp3" />
+
+      <div className="stars" />
       <div className="moon" />
 
-      <div className="stars">
-        {Array.from({ length: 90 }).map((_, i) => (
-          <span
-            key={i}
-            style={{
-              left: `${(i * 37) % 100}%`,
-              top: `${(i * 61) % 100}%`,
-              animationDelay: `${(i % 8) * 0.4}s`,
-            }}
-          />
-        ))}
-      </div>
+      <div className="arabic-pattern pattern-one" />
+      <div className="arabic-pattern pattern-two" />
 
-      <div className="petals">
-        {petals.map((i) => (
-          <i
-            key={i}
-            style={{
-              left: `${(i * 31) % 100}%`,
-              animationDelay: `${(i % 12) * 0.45}s`,
-              animationDuration: `${7 + (i % 6)}s`,
-            }}
-          />
-        ))}
-      </div>
+      <div className="floating-orb orb-one" />
+      <div className="floating-orb orb-two" />
 
-      <div className="counter">
-        {String(step + 1).padStart(2, "0")} / 05
-      </div>
+      <button className="music-btn" onClick={toggleMusic}>
+        <span className={music ? "sound active" : "sound"}>♫</span>
+        {music ? " MUSIQA YOQILDI" : " MUSIQANI YOQISH"}
+      </button>
 
-      {step === 0 && (
-        <section className="hero">
-          <div className="tiny">A LITTLE SOMETHING FOR</div>
+      {!opened ? (
+        <section className="landing">
+          <div className="intro">
+            <span className="arabic-small">إلى دينارا</span>
 
-          <div className="name">
-            <span>D</span>
-            <span>I</span>
-            <span>N</span>
-            <span>A</span>
-            <span>R</span>
-            <span>A</span>
-          </div>
+            <h1>
+              D<span>i</span>nara
+            </h1>
 
-          <div className="line" />
+            <p className="subtitle">
+              Ba'zi insonlarni yillar emas,
+              <br />
+              yurak eslab qoladi.
+            </p>
 
-          <p className="heroText">
-            Ba'zan insonni xursand qilish uchun
-            <br />
-            katta sabab kerak emas.
-          </p>
-
-          <button className="mainButton" onClick={next}>
-            <span>BU YERGA BOS</span>
-            <b>→</b>
-          </button>
-
-          <div className="scrollHint">
-            <span />
-            davom et
-          </div>
-        </section>
-      )}
-
-      {step === 1 && (
-        <section className="content">
-          <div className="eyebrow">01 — DINARA</div>
-
-          <h1>
-            Bugun seni
-            <br />
-            <em>tabassum</em> qildirmoqchiman.
-          </h1>
-
-          <p>
-            Balki kuning unchalik yaxshi o'tmagandir.
-            Balki nimadir kayfiyatingni tushirgandir.
-            Lekin hozir shu kichkina joyda faqat bitta narsa bor:
-          </p>
-
-          <div className="quote">
-            <span>“</span>
-            <strong>sen.</strong>
-            <span>”</span>
-          </div>
-
-          <button className="mainButton" onClick={next}>
-            DAVOM ET <b>→</b>
-          </button>
-        </section>
-      )}
-
-      {step === 2 && (
-        <section className="content envelopeSection">
-          <div className="eyebrow">02 — OPEN ME</div>
-
-          <h1>
-            Senga
-            <br />
-            <em>kichkina xat.</em>
-          </h1>
-
-          {!opened ? (
-            <div
-              className="envelope"
-              onClick={() => setOpened(true)}
-            >
-              <div className="envelopeBack" />
-              <div className="paper">
-                <div>♡</div>
-              </div>
-              <div className="flap" />
-              <div className="envelopeFront" />
-              <span>OPEN</span>
+            <div className="years">
+              <span>6</span>
+              <i>—</i>
+              <span>7</span>
+              <small>YIL</small>
             </div>
-          ) : (
-            <div className="letterCard">
-              <div className="letterTop">FOR DINARA ♡</div>
+          </div>
 
+          <div
+            className={`envelope-wrap ${opened ? "opening" : ""}`}
+            onClick={openEnvelope}
+          >
+            <div className="glow" />
+
+            <div className="envelope">
+              <div className="envelope-back" />
+
+              <div className="envelope-paper">
+                <div className="paper-decoration">✦</div>
+
+                <p>
+                  Dinara,
+                  <br />
+                  bu xatni shunchaki
+                  <br />
+                  o‘qib qo‘yishing uchun emas...
+                </p>
+              </div>
+
+              <div className="envelope-front" />
+
+              <div className="flap">
+                <div className="seal">
+                  D
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="open-hint">
+            <span>✦</span>
+            Konvertni ochish uchun bosing
+            <span>✦</span>
+          </div>
+
+          <div className="bottom-note">
+            <span>made with sincerity</span>
+            <b>♡</b>
+          </div>
+        </section>
+      ) : (
+        <section className="letter-page">
+          <div className="letter-glow" />
+
+          <div className="letter-card">
+            <div className="letter-top">
+              <span>✦</span>
+              <span>DINARA</span>
+              <span>✦</span>
+            </div>
+
+            <div className="arabic-line">
+              إلى الإنسان الذي لم أنسه
+            </div>
+
+            <h2>
+              Senga aytilmagan
+              <br />
+              <em>gaplarim bor.</em>
+            </h2>
+
+            <div className="divider">
+              <span>◆</span>
+            </div>
+
+            <div className="letter-text">
               <p>
-                Men seni doim xursand qila olaman deb
-                va'da berolmayman.
-                <br />
-                Lekin seni xafa ko'rsam,
-                hech bo'lmasa kayfiyatingni ko'tarishga
-                harakat qilaman.
+                Dinara...
               </p>
 
-              <div className="letterBottom">
-                with a little love ✦
-              </div>
+              <p>
+                Balki bu xatni ochganingda,
+                men haqimda o‘ylashni ham
+                xohlamayotgandirsan.
+              </p>
 
-              <button className="mainButton" onClick={next}>
-                YANA BIR NARSA <b>→</b>
-              </button>
+              <p>
+                Balki meni bloklaganing uchun
+                o‘zingcha bir sababing bordir.
+                Men seni buning uchun ayblamayman.
+              </p>
+
+              <p>
+                Men faqat bir narsani aytmoqchiman.
+              </p>
+
+              <p className="highlight">
+                Seni 6–7 yildan beri taniyman.
+              </p>
+
+              <p>
+                Shu vaqt ichida hayotimizda juda
+                ko‘p narsalar bo‘ldi. Kulgan kunlarimiz,
+                gaplashgan paytlarimiz, oddiygina
+                bir-birimizni tushungan onlarimiz...
+              </p>
+
+              <p>
+                Balki men hammasini to‘g‘ri qila
+                olmagandirman. Balki seni xafa qilgan
+                paytlarim ham bo‘lgandir.
+              </p>
+
+              <p>
+                Lekin men seni hech qachon
+                oddiy inson deb ko‘rmaganman.
+              </p>
+
+              <p className="big-line">
+                Sen men uchun doim alohida
+                inson bo‘lib qolding.
+              </p>
+
+              <p>
+                Arabcha musiqalarni yaxshi ko‘rishing,
+                arabcha kiyimlar, raqsga tushishing,
+                o‘zingga xosliging...
+              </p>
+
+              <p>
+                Balki bularning hammasi kichik
+                narsalardek tuyular. Lekin men
+                seni aynan shundayliging bilan
+                eslayman.
+              </p>
+
+              <p className="highlight">
+                Men sendan hech narsa talab qilmayman.
+              </p>
+
+              <p>
+                Faqat qachondir bu sahifaga qaytib
+                qolsang, shuni bilishingni xohladim:
+                seni chin dildan qadrlagan inson
+                bo‘lgan.
+              </p>
+
+              <p>
+                Va bu gaplarni yozishimning sababi —
+                seni majburlash emas.
+              </p>
+
+              <p className="final">
+                Shunchaki yuragimda qolib ketgan
+                gaplarni bir marta bo‘lsa ham
+                chiroyli qilib aytib qo‘yish.
+              </p>
             </div>
-          )}
-        </section>
-      )}
 
-      {step === 3 && (
-        <section className="content special">
-          <div className="eyebrow">03 — ONE THING</div>
-
-          <div className="giantHeart">♡</div>
-
-          <h1>
-            Dinara,
-            <br />
-            <em>sen juda qadrlisan.</em>
-          </h1>
-
-          <p>
-            Shuni eslab qo'y.
-            Bugungi kayfiyat o'tib ketadi.
-            Lekin sening tabassuming yana qaytadi.
-          </p>
-
-          <button className="mainButton" onClick={next}>
-            OXIRGISI <b>→</b>
-          </button>
-        </section>
-      )}
-
-      {step === 4 && (
-        <section className="final">
-          <div className="finalGlow" />
-
-          <div className="eyebrow">FOR YOU, DINARA</div>
-
-          <div className="finalName">DINARA</div>
-
-          <div className="finalLine" />
-
-          <h1>
-            Endi faqat
-            <br />
-            <em>tabassum qil.</em>
-          </h1>
-
-          <p>
-            Men bu saytni mukammal qilish uchun emas,
-            <br />
-            seni hech bo'lmasa bir soniyaga
-            xursand qilish uchun qildim.
-          </p>
-
-          <div className="finalHeart">♥</div>
-
-          <div className="signature">
-            sen uchun, chin dildan.
+            <div className="signature">
+              <span>With all sincerity</span>
+              <strong>Saidbek</strong>
+              <small>♡</small>
+            </div>
           </div>
 
-          <div className="finalHint">
-            ✦ END ✦
+          <div className="memory-strip">
+            {memories.map((memory, index) => (
+              <div
+                className="memory"
+                key={index}
+                style={{ animationDelay: `${index * 0.3}s` }}
+              >
+                {memory}
+              </div>
+            ))}
+          </div>
+
+          <div className="footer-message">
+            <span>لا شيء يُنسى بسهولة</span>
+            <p>Ba'zi xotiralar shunchaki yo‘qolib ketmaydi.</p>
           </div>
         </section>
       )}
-    </div>
+    </main>
   );
 }
+
+export default App;
