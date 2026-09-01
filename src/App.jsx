@@ -1,229 +1,323 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import "./App.css";
 
-const memories = [
-  "6–7 yil...",
-  "Shuncha vaqt ichida juda ko‘p narsalar o‘zgardi.",
-  "Lekin seni qadrlashim o‘zgarmadi.",
-];
+const hearts = Array.from({ length: 24 });
 
 function App() {
-  const [opened, setOpened] = useState(false);
+  const [doorOpen, setDoorOpen] = useState(false);
+  const [letterOpen, setLetterOpen] = useState(false);
+  const [exitAttempt, setExitAttempt] = useState(false);
+  const [accepted, setAccepted] = useState(false);
+  const [fireworks, setFireworks] = useState(false);
+  const [noPos, setNoPos] = useState({ x: 0, y: 0 });
 
-  const openEnvelope = () => {
-    setOpened(true);
+  useEffect(() => {
+    if (!fireworks) return;
+
+    const timer = setTimeout(() => {
+      setFireworks(false);
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [fireworks]);
+
+  const openLetter = () => {
+    setExitAttempt(false);
+    setDoorOpen(true);
+
+    setTimeout(() => {
+      setLetterOpen(true);
+    }, 900);
+  };
+
+  const tryExit = () => {
+    if (letterOpen) return;
+
+    setExitAttempt(true);
+
+    // Eshik biroz qimirlaydi, lekin ochilmaydi
+    setTimeout(() => {
+      setExitAttempt(false);
+    }, 900);
+  };
+
+  const escapeNo = () => {
+    const x = Math.random() * 220 - 110;
+    const y = Math.random() * 140 - 70;
+
+    setNoPos({ x, y });
+  };
+
+  const accept = () => {
+    setAccepted(true);
+    setFireworks(true);
+  };
+
+  const reset = () => {
+    setDoorOpen(false);
+    setLetterOpen(false);
+    setExitAttempt(false);
+    setAccepted(false);
+    setFireworks(false);
+    setNoPos({ x: 0, y: 0 });
   };
 
   return (
     <main className="app">
-      <div className="stars" />
-      <div className="moon" />
+      {/* BACKGROUND */}
+      <div className="ambient-glow glow-one" />
+      <div className="ambient-glow glow-two" />
 
-      <div className="arabic-pattern pattern-one" />
-      <div className="arabic-pattern pattern-two" />
+      <div className="stars">
+        {Array.from({ length: 45 }).map((_, i) => (
+          <span key={i} className="star" />
+        ))}
+      </div>
 
-      <div className="floating-orb orb-one" />
-      <div className="floating-orb orb-two" />
-
-      {!opened ? (
-        <section className="landing">
-          <div className="intro">
-            <span className="arabic-small">إلى دينارا</span>
-
-            <h1>
-              D<span>i</span>nara
-            </h1>
-
-            <p className="subtitle">
-              Ba'zi insonlarni yillar emas,
-              <br />
-              yurak eslab qoladi.
-            </p>
-
-            <div className="years">
-              <span>6</span>
-              <i>—</i>
-              <span>7</span>
-              <small>YIL</small>
-            </div>
-          </div>
-
-          <div
-            className={`envelope-wrap ${opened ? "opening" : ""}`}
-            onClick={openEnvelope}
+      {/* HEARTS */}
+      <div className="hearts">
+        {hearts.map((_, i) => (
+          <span
+            key={i}
+            className="floating-heart"
+            style={{
+              "--delay": `${Math.random() * 8}s`,
+              "--duration": `${7 + Math.random() * 8}s`,
+              "--left": `${Math.random() * 100}%`,
+              "--size": `${10 + Math.random() * 14}px`,
+            }}
           >
-            <div className="glow" />
+            ♥
+          </span>
+        ))}
+      </div>
 
-            <div className="envelope">
-              <div className="envelope-back" />
+      {/* TOP DECORATION */}
+      <header className="top">
+        <div className="arabic-small">بِسْمِ اللَّهِ</div>
+        <div className="top-line" />
+        <div className="arabic-small">مَحَبَّة • احْتِرَام • قَدْر</div>
+      </header>
 
-              <div className="envelope-paper">
-                <div className="paper-decoration">✦</div>
+      {!letterOpen ? (
+        <section className="entrance">
+          <div className="intro">
+            <p className="eyebrow">A LITTLE MESSAGE</p>
+            <h1>Bir daqiqa...</h1>
+            <p className="subtitle">
+              Sizlar uchun kichkina, lekin chin dildan tayyorlangan narsa bor.
+            </p>
+          </div>
 
-                <p>
-                  Dinara,
-                  <br />
-                  bu xatni shunchaki
-                  <br />
-                  o‘qib qo‘yishing uchun emas...
-                </p>
-              </div>
+          {/* DOOR */}
+          <div
+            className={`door-area ${
+              exitAttempt ? "door-shake" : ""
+            } ${doorOpen ? "door-open" : ""}`}
+          >
+            <div className="door-frame">
+              <div className="door-glow" />
 
-              <div className="envelope-front" />
+              <div className="door">
+                <div className="door-top-ornament">✦</div>
 
-              <div className="flap">
-                <div className="seal">D</div>
+                <div className="door-panel panel-one">
+                  <span>ب</span>
+                </div>
+
+                <div className="door-panel panel-two">
+                  <span>م</span>
+                </div>
+
+                <div className="door-lock">
+                  <div className="lock-body">
+                    <div className="lock-hole" />
+                  </div>
+                </div>
+
+                <div className="door-bottom">۞</div>
               </div>
             </div>
+
+            {exitAttempt && (
+              <div className="locked-message">
+                <span>🔒</span>
+                <strong>Eshik qulflangan</strong>
+                <small>Avval konvertni oching...</small>
+              </div>
+            )}
           </div>
 
-          <div className="open-hint">
-            <span>✦</span>
-            Konvertni ochish uchun bosing
-            <span>✦</span>
-          </div>
+          {/* CHOICES */}
+          <div className="choices">
+            <button className="choice envelope" onClick={openLetter}>
+              <span className="choice-icon">✉</span>
+              <span>
+                <b>Konvertni ochish</b>
+                <small>Ichida sizlar uchun xabar bor</small>
+              </span>
+            </button>
 
-          <div className="bottom-note">
-            <span>made with sincerity</span>
-            <b>♡</b>
+            <button className="choice exit" onClick={tryExit}>
+              <span className="choice-icon">⌁</span>
+              <span>
+                <b>Chiqish</b>
+                <small>Bu eshik orqali</small>
+              </span>
+            </button>
           </div>
         </section>
       ) : (
-        <section className="letter-page">
+        <section className="letter-section">
           <div className="letter-glow" />
 
-          <div className="letter-card">
-            <div className="letter-top">
-              <span>✦</span>
-              <span>DINARA</span>
-              <span>✦</span>
+          <div className="letter">
+            <div className="letter-decoration top-decoration">
+              <span>﷽</span>
             </div>
 
-            <div className="arabic-line">
-              إلى الإنسان الذي لم أنسه
+            <div className="letter-arabic">
+              السلام عليكم
             </div>
-
-            <h2>
-              Senga aytilmagan
-              <br />
-              <em>gaplarim bor.</em>
-            </h2>
 
             <div className="divider">
-              <span>◆</span>
+              <span>✦</span>
             </div>
 
-            <div className="letter-text">
-              <p>Dinara...</p>
+            <p className="letter-intro">Sizlarga bir gapim bor...</p>
 
+            <div className="message">
               <p>
-                Balki bu xatni ochganingda,
-                men haqimda o‘ylashni ham
-                xohlamayotgandirsan.
-              </p>
-
-              <p>
-                Balki meni bloklaganing uchun
-                o‘zingcha bir sababing bordir.
-                Men seni buning uchun ayblamayman.
+                Men sizlarni chin dildan <strong>qadrlayman</strong> va
+                hurmat qilaman.
               </p>
 
               <p>
-                Men faqat bir narsani aytmoqchiman.
-              </p>
-
-              <p className="highlight">
-                Seni 6–7 yildan beri taniyman.
+                Yoshim kichikroq bo‘lishi mumkin, lekin iltimos, meni faqat
+                yoshimga qarab baholamanglar.
               </p>
 
               <p>
-                Shu vaqt ichida hayotimizda juda
-                ko‘p narsalar bo‘ldi. Kulgan kunlarimiz,
-                gaplashgan paytlarimiz, oddiygina
-                bir-birimizni tushungan onlarimiz...
+                Hayotimdagi ayrim voqealar sababli juda erta ulg‘ayishga
+                to‘g‘ri kelgan. Shuning uchun ba'zi narsalarga boshqalardan
+                boshqacharoq qarashim mumkin.
               </p>
 
               <p>
-                Balki men hammasini to‘g‘ri qila
-                olmagandirman. Balki seni xafa qilgan
-                paytlarim ham bo‘lgandir.
+                Men hech kimdan o‘zimni katta ko‘rsatishni yoki boshqalardan
+                ustun bo‘lishni istamayman.
               </p>
 
               <p>
-                Lekin men seni hech qachon
-                oddiy inson deb ko‘rmaganman.
-              </p>
-
-              <p className="big-line">
-                Sen men uchun doim alohida
-                inson bo‘lib qolding.
+                Faqat meni ham tushunishingizni, fikrlarimga hurmat bilan
+                qarashingizni va yoshim sababli meni mensimasligingizni
+                istayman.
               </p>
 
               <p>
-                Arabcha musiqalarni yaxshi ko‘rishing,
-                arabcha kiyimlar, raqsga tushishing,
-                o‘zingga xosliging...
+                Sizlar bilan bir guruhda bo‘lish men uchun qadrlidir.
               </p>
 
-              <p>
-                Balki bularning hammasi kichik
-                narsalardek tuyular. Lekin men
-                seni aynan shundayliging bilan
-                eslayman.
+              <p className="final-message">
+                Menga yaxshi muomala qilinglar. 🤍
               </p>
 
-              <p className="highlight">
-                Men sendan hech narsa talab qilmayman.
-              </p>
-
-              <p>
-                Faqat qachondir bu sahifaga qaytib
-                qolsang, shuni bilishingni xohladim:
-                seni chin dildan qadrlagan inson
-                bo‘lgan.
-              </p>
-
-              <p>
-                Va bu gaplarni yozishimning sababi —
-                seni majburlash emas.
-              </p>
-
-              <p className="final">
-                Shunchaki yuragimda qolib ketgan
-                gaplarni bir marta bo‘lsa ham
-                chiroyli qilib aytib qo‘yish.
+              <p className="strong-final">
+                Meni yoshim bilan emas,
+                <br />
+                fikrim va munosabatim bilan taninglar.
               </p>
             </div>
 
-            <div className="signature">
-              <span>With all sincerity</span>
-              <strong>Saidbek</strong>
-              <small>♡</small>
+            <div className="letter-decoration bottom-decoration">
+              <span>❈</span>
+              <span>۞</span>
+              <span>❈</span>
             </div>
           </div>
 
-          <div className="memory-strip">
-            {memories.map((memory, index) => (
-              <div
-                className="memory"
-                key={index}
-                style={{
-                  animationDelay: `${index * 0.3}s`,
-                }}
-              >
-                {memory}
+          {!accepted ? (
+            <div className="question">
+              <p className="question-small">Birgina savol...</p>
+              <h2>Meni tushundingizmi?</h2>
+
+              <div className="answer-area">
+                <button className="yes-button" onClick={accept}>
+                  HA <span>♡</span>
+                </button>
+
+                <button
+                  className="no-button"
+                  onMouseEnter={escapeNo}
+                  onTouchStart={escapeNo}
+                  onClick={escapeNo}
+                  style={{
+                    transform: `translate(${noPos.x}px, ${noPos.y}px)`,
+                  }}
+                >
+                  YO‘Q
+                </button>
               </div>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <div className="accepted">
+              <div className="success-symbol">✦</div>
+              <h2>Rahmat. 🤍</h2>
+              <p>
+                Sizlarni qadrlayman.
+                <br />
+                Har doim yaxshi munosabatda bo‘laylik.
+              </p>
 
-          <div className="footer-message">
-            <span>لا شيء يُنسى بسهولة</span>
-            <p>
-              Ba'zi xotiralar shunchaki yo‘qolib ketmaydi.
-            </p>
-          </div>
+              <button className="again-button" onClick={reset}>
+                ↺ Boshidan ko‘rish
+              </button>
+            </div>
+          )}
         </section>
       )}
+
+      {/* FIREWORKS */}
+      {fireworks && (
+        <div className="fireworks">
+          {Array.from({ length: 18 }).map((_, i) => (
+            <div
+              key={i}
+              className="firework"
+              style={{
+                "--x": `${Math.random() * 100}vw`,
+                "--y": `${15 + Math.random() * 60}vh`,
+                "--delay": `${Math.random() * 0.8}s`,
+              }}
+            >
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+              <i />
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* CREATOR */}
+      <a
+        className="creator"
+        href="https://t.me/kamolovsaidbek"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <span>✦</span>
+        YARATUVCHI
+        <span>✦</span>
+      </a>
+
+      <div className="copyright">
+        Made with respect &nbsp;•&nbsp; 2026
+      </div>
     </main>
   );
 }
